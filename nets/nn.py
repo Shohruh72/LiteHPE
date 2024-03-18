@@ -281,7 +281,7 @@ class HPE(torch.nn.Module):
         self.layer3 = backbone.stage3
         self.layer4 = backbone.stage4
         self.gap = nn.AdaptiveAvgPool2d(output_size=1)
-        self.linear_reg = nn.Linear(1024, 6)
+        self.linear_reg = nn.Linear(self.layer4[-1].oup, 6)
 
     def forward(self, x):
         x = self.layer0(x)
