@@ -18,7 +18,7 @@ from utils.util import *
 def train(args):
     weight_path = f'outputs/weights/{args.model_name}.pth.tar'
     model = nn.HPE(weight_path, True, args.model_name).cuda()
-    dataset = Datasets(f'{args.data_dir}', '300W_LP', get_transforms(True))
+    dataset = Datasets(f'{args.data_dir}', 'AFLW2K', get_transforms(True))
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
     criterion = GeodesicLoss().cuda()
@@ -58,16 +58,18 @@ def train(args):
                              'Roll': str(f'{last[2]:.3f}'),
                              'epoch': str(epoch + 1).zfill(3)})
             log.flush()
-            if best < sum(last):
+            if sum(last) < best:
                 best = sum(last)
+                print('....saved best')
+                save = {'model': copy.deepcopy(ema.ema).half()}
+                torch.save(save, f'outputs/weights/best.pt')
+                del save
 
             save = {'model': copy.deepcopy(ema.ema).half()}
             torch.save(save, f'outputs/weights/last.pt')
-            if best == sum(last):
-                torch.save(save, f'outputs/weights/best.pt')
             del save
 
-            scheduler.step()
+        scheduler.step()
 
     torch.cuda.empty_cache()
     print('Training completed.')
@@ -76,7 +78,7 @@ def train(args):
 @torch.no_grad()
 def test(args, model=None):
     if model is None:
-        model = torch.load(f=f'outputs/weights/best.pt', map_location='cuda')['model']
+        model = torch.load(f=f'outputs/weights/best.pt', map_location='cuda')['model'].float()
     model = nn.re_parameterize_model(model)
     model.eval()
     model.inference_mode = True
@@ -203,13 +205,13 @@ def inference(args):
 
 def main():
     parser = argparse.ArgumentParser(description='Head Pose Estimation')
-    parser.add_argument('--model_name', type=str, default='s0')
+    parser.add_argument('--model_name', type=str, default='s1')
     parser.add_argument('--data_dir', type=str, default='../../Datasets/HPE')
     parser.add_argument('--epochs', type=int, default=120)
     parser.add_argument('--lr', type=float, default=0.0001)
     parser.add_argument('--batch-size', type=int, default=64)
-    parser.add_argument('--train', default=True, action='store_true')
-    parser.add_argument('--test', action='store_true')
+    parser.add_argument('--train', action='store_true')
+    parser.add_argument('--test', default=True, action='store_true')
     parser.add_argument('--inference', action='store_true')
 
     args = parser.parse_args()
