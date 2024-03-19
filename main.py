@@ -61,11 +61,11 @@ def train(args):
             if best < sum(last):
                 best = sum(last)
 
-                save = {'model': copy.deepcopy(ema.ema).half()}
-                torch.save(save, f'outputs/weights/last.pt')
-                if best == sum(last):
-                    torch.save(save, f'outputs/weights/best.pt')
-                del save
+            save = {'model': copy.deepcopy(ema.ema).half()}
+            torch.save(save, f'outputs/weights/last.pt')
+            if best == sum(last):
+                torch.save(save, f'outputs/weights/best.pt')
+            del save
 
             scheduler.step()
 
