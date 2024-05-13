@@ -1,4 +1,4 @@
-# 6DRepNet: Head Pose Estimation
+# LiteHPE: Head Pose Estimation
 ![Vizualization](https://github.com/Shohruh72/SixDRepNet/blob/master/weights/Result.gif)
 
 ## Features
